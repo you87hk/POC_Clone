@@ -120,7 +120,6 @@ Partial Class frmC001
         Me.cboCusMLCode = New System.Windows.Forms.ComboBox()
         Me.cboCusCurr = New System.Windows.Forms.ComboBox()
         Me._tabDetailInfo_TabPage3 = New System.Windows.Forms.TabPage()
-        Me.tblCommon = New C1.Win.C1TrueDBGrid.C1TrueDBGrid()
         Me.lblQty = New System.Windows.Forms.Label()
         Me.lblOpenBal = New System.Windows.Forms.Label()
         Me.lblNet = New System.Windows.Forms.Label()
@@ -144,6 +143,7 @@ Partial Class frmC001
         Me.lblAcmYrSale = New System.Windows.Forms.Label()
         Me.lblAcmSale = New System.Windows.Forms.Label()
         Me.lblAcmMnSale = New System.Windows.Forms.Label()
+        Me.tblCommon = New C1.Win.C1TrueDBGrid.C1TrueDBGrid()
         Me.txtSaleID = New System.Windows.Forms.TextBox()
         CType(Me.tblDetail, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.tbrProcess.SuspendLayout()
@@ -160,15 +160,15 @@ Partial Class frmC001
         '
         'tblDetail
         '
-        Me.tblDetail.Location = New System.Drawing.Point(0, 0)
+        Me.tblDetail.Location = New System.Drawing.Point(344, 16)
         Me.tblDetail.Name = "tblDetail"
         Me.tblDetail.PreviewInfo.Location = New System.Drawing.Point(0, 0)
         Me.tblDetail.PreviewInfo.Size = New System.Drawing.Size(0, 0)
         Me.tblDetail.PreviewInfo.ZoomFactor = 75.0R
         Me.tblDetail.PrintInfo.PageSettings = CType(resources.GetObject("tblDetail.PrintInfo.PageSettings"), System.Drawing.Printing.PageSettings)
         Me.tblDetail.PropBag = resources.GetString("tblDetail.PropBag")
-        Me.tblDetail.Size = New System.Drawing.Size(75, 23)
-        Me.tblDetail.TabIndex = 0
+        Me.tblDetail.Size = New System.Drawing.Size(257, 177)
+        Me.tblDetail.TabIndex = 94
         '
         'tbrProcess
         '
@@ -340,7 +340,7 @@ Partial Class frmC001
         'txtCusName
         '
         Me.txtCusName.AcceptsReturn = True
-        Me.txtCusName.BackColor = System.Drawing.SystemColors.Window
+        Me.txtCusName.BackColor = System.Drawing.SystemColors.ControlLight
         Me.txtCusName.Enabled = False
         Me.txtCusName.Location = New System.Drawing.Point(80, 40)
         Me.txtCusName.MaxLength = 0
@@ -1089,12 +1089,12 @@ Partial Class frmC001
         '
         '_tabDetailInfo_TabPage3
         '
-        Me._tabDetailInfo_TabPage3.Controls.Add(Me.tblCommon)
         Me._tabDetailInfo_TabPage3.Controls.Add(Me.lblQty)
         Me._tabDetailInfo_TabPage3.Controls.Add(Me.lblOpenBal)
         Me._tabDetailInfo_TabPage3.Controls.Add(Me.lblNet)
         Me._tabDetailInfo_TabPage3.Controls.Add(Me.lblDspOpenBal)
         Me._tabDetailInfo_TabPage3.Controls.Add(Me.lblDspCrtDate)
+        Me._tabDetailInfo_TabPage3.Controls.Add(Me.tblDetail)
         Me._tabDetailInfo_TabPage3.Controls.Add(Me.lblDspCloseBal)
         Me._tabDetailInfo_TabPage3.Controls.Add(Me.lblDspARBal)
         Me._tabDetailInfo_TabPage3.Controls.Add(Me.lblDspAcmYrSaleQty)
@@ -1118,19 +1118,6 @@ Partial Class frmC001
         Me._tabDetailInfo_TabPage3.Size = New System.Drawing.Size(625, 199)
         Me._tabDetailInfo_TabPage3.TabIndex = 3
         Me._tabDetailInfo_TabPage3.Text = "備註"
-        '
-        'tblCommon
-        '
-        Me.tblCommon.Location = New System.Drawing.Point(0, 0)
-        Me.tblCommon.Name = "tblCommon"
-        Me.tblCommon.PreviewInfo.Location = New System.Drawing.Point(0, 0)
-        Me.tblCommon.PreviewInfo.Size = New System.Drawing.Size(0, 0)
-        Me.tblCommon.PreviewInfo.ZoomFactor = 75.0R
-        Me.tblCommon.PrintInfo.PageSettings = CType(resources.GetObject("tblCommon.PrintInfo.PageSettings"), System.Drawing.Printing.PageSettings)
-        Me.tblCommon.PropBag = resources.GetString("tblCommon.PropBag")
-        Me.tblCommon.Size = New System.Drawing.Size(81, 33)
-        Me.tblCommon.TabIndex = 0
-        Me.tblCommon.Visible = False
         '
         'lblQty
         '
@@ -1316,6 +1303,19 @@ Partial Class frmC001
         Me.lblAcmMnSale.TabIndex = 89
         Me.lblAcmMnSale.Text = "ACMMNSALE"
         '
+        'tblCommon
+        '
+        Me.tblCommon.Location = New System.Drawing.Point(8, 168)
+        Me.tblCommon.Name = "tblCommon"
+        Me.tblCommon.PreviewInfo.Location = New System.Drawing.Point(0, 0)
+        Me.tblCommon.PreviewInfo.Size = New System.Drawing.Size(0, 0)
+        Me.tblCommon.PreviewInfo.ZoomFactor = 75.0R
+        Me.tblCommon.PrintInfo.PageSettings = CType(resources.GetObject("tblCommon.PrintInfo.PageSettings"), System.Drawing.Printing.PageSettings)
+        Me.tblCommon.PropBag = resources.GetString("tblCommon.PropBag")
+        Me.tblCommon.Size = New System.Drawing.Size(81, 33)
+        Me.tblCommon.TabIndex = 0
+        Me.tblCommon.Visible = False
+        '
         'txtSaleID
         '
         Me.txtSaleID.AcceptsReturn = True
@@ -1332,11 +1332,11 @@ Partial Class frmC001
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.SystemColors.ActiveBorder
         Me.ClientSize = New System.Drawing.Size(663, 405)
+        Me.Controls.Add(Me.tblCommon)
         Me.Controls.Add(Me.txtSaleID)
         Me.Controls.Add(Me.tabDetailInfo)
         Me.Controls.Add(Me.fraCustomerInfo)
         Me.Controls.Add(Me.tbrProcess)
-        Me.Controls.Add(Me.tblDetail)
         Me.Font = New System.Drawing.Font("Arial", 8.0!)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Location = New System.Drawing.Point(44, 85)

@@ -61,7 +61,6 @@ Public Class frmC001
         'Me.Top = 0
         'Me.Width = Screen.Width
         'Me.Height = Screen.Height
-        Me.WindowState = FormWindowState.Maximized
         wsConnTime = Dsp_Date(Now, True)
         wsFormID = "C001"
         wsTrnCd = ""
@@ -185,6 +184,18 @@ Public Class frmC001
         Call Get_Scr_Item("TOOLTIP", waScrToolTip)
 
         wsFormCaption = Get_Caption(waScrItm, "SCRHDR")
+        Me.Text = wsFormCaption
+
+        'Dim str As String = String.Empty
+        'Dim i, j As Integer
+        'For i = 0 To waScrItm.Rows.Count - 1
+        '    For j = 0 To waScrItm.Columns.Count - 1
+        '        str += waScrItm.Rows(i).Item(j) + " | "
+        '    Next
+        '    str += Environment.NewLine
+        'Next
+
+        'MsgBox(str)
 
         fraCustomerInfo.Text = Get_Caption(waScrItm, "FRACUSTOMERINFO")
         lblCusCode.Text = Get_Caption(waScrItm, "CUSCODE")
@@ -258,7 +269,7 @@ Public Class frmC001
         Exit Sub
 
 Ini_Caption_Err:
-
+        MsgBox(Err.Description)
         MsgBox("Please Check ini_Caption!")
 
     End Sub
@@ -455,6 +466,7 @@ Ini_Caption_Err:
 
     Private Sub cboCusMLCode_DropDown(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs)
         Dim wsSQL As String
+        Dim location As Point
 
         Me.Cursor = System.Windows.Forms.Cursors.WaitCursor
 
@@ -462,11 +474,12 @@ Ini_Caption_Err:
 
         wsSQL = "SELECT MLCode, MLDesc FROM MstMerchClass WHERE MLStatus = '1'"
         wsSQL = wsSQL & "ORDER BY MLCode "
-        G = Me.CreateGraphics()
-        Call Ini_Combo(2, wsSQL, (cboCusMLCode.Left * G.DpiX / 1024) + (tabDetailInfo.Left * G.DpiX / 1024), (cboCusMLCode.Top * G.DpiY / 1024) + (cboCusMLCode.Height * G.DpiY / 1024) + (tabDetailInfo.Top * G.DpiY / 1024), tblCommon, "C001", "TBLCUSML", (Me.Width * G.DpiX / 1024), (Me.Height * G.DpiY / 1024), G)
-        G.Dispose()
+        location = Get_Control_Location(cboCusMLCode)
+        Call Ini_Combo(2, wsSQL, location.X, location.Y + cboCusMLCode.Height, tblCommon, "C001", "TBLCUSML", Me.Width, Me.Height)
+
 
         tblCommon.Visible = True
+        tblCommon.BringToFront()
         tblCommon.Focus()
         Me.Cursor = System.Windows.Forms.Cursors.Default
     End Sub
@@ -505,6 +518,7 @@ EventExitSub:
 
     Private Sub cboCusRgnCode_DropDown(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs)
         Dim wsSQL As String
+        Dim location As Point
 
         Me.Cursor = System.Windows.Forms.Cursors.WaitCursor
 
@@ -512,11 +526,11 @@ EventExitSub:
 
         wsSQL = "SELECT RgnCode, RgnDesc FROM MstRegion WHERE RgnStatus = '1'"
         wsSQL = wsSQL & "ORDER BY RgnCode "
-        G = Me.CreateGraphics()
-        Call Ini_Combo(2, wsSQL, (cboCusRgnCode.Left * G.DpiX / 1024) + (tabDetailInfo.Left * G.DpiX / 1024), (cboCusRgnCode.Top * G.DpiY / 1024) + (cboCusRgnCode.Height * G.DpiY / 1024) + (tabDetailInfo.Top * G.DpiY / 1024), tblCommon, "C001", "TBLCUSRGN", (Me.Width * G.DpiX / 1024), (Me.Height * G.DpiY / 1024), G)
-        G.Dispose()
-
+        location = Get_Control_Location(cboCusRgnCode)
+        Call Ini_Combo(2, wsSQL, location.X, location.Y + cboCusRgnCode.Height, tblCommon, "C001", "TBLCUSRGN", Me.Width, Me.Height)
+        
         tblCommon.Visible = True
+        tblCommon.BringToFront()
         tblCommon.Focus()
         Me.Cursor = System.Windows.Forms.Cursors.Default
     End Sub
@@ -2821,6 +2835,7 @@ tblCommon_LostFocus_Err:
 
     Private Sub cboCusCode_DropDown(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cboCusCode.DropDown
         Dim wsSQL As String
+        Dim location As Point
 
         Me.Cursor = System.Windows.Forms.Cursors.WaitCursor
 
@@ -2830,11 +2845,12 @@ tblCommon_LostFocus_Err:
         wsSQL = wsSQL & " AND CusCode LIKE '%" & IIf(cboCusCode.SelectionLength > 0, "", Set_Quote(cboCusCode.Text)) & "%' "
 
         wsSQL = wsSQL & "ORDER BY CusCode "
-        G = Me.CreateGraphics()
-        Call Ini_Combo(2, wsSQL, ((cboCusCode.Left * G.DpiX / 1024)), (cboCusCode.Top * G.DpiY / 1024) + (cboCusCode.Height * G.DpiY / 1024), tblCommon, "C001", "TBLC", (Me.Width * G.DpiX / 1024), (Me.Height * G.DpiY / 1024), G)
-        G.Dispose()
+
+        location = Get_Control_Location(cboCusCode)
+        Call Ini_Combo(2, wsSQL, location.X, location.Y + cboCusCode.Height, tblCommon, "C001", "TBLC", Me.Width, Me.Height)
 
         tblCommon.Visible = True
+        tblCommon.BringToFront()
         tblCommon.Focus()
         Me.Cursor = System.Windows.Forms.Cursors.Default
     End Sub
@@ -2866,6 +2882,7 @@ tblCommon_LostFocus_Err:
 
     Private Sub cboCusShipTerrCode_DropDown(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cboCusShipTerrCode.DropDown
         Dim wsSQL As String
+        Dim location As Point
 
         Me.Cursor = System.Windows.Forms.Cursors.WaitCursor
 
@@ -2873,11 +2890,11 @@ tblCommon_LostFocus_Err:
 
         wsSQL = "SELECT TerrCode, TerrDesc FROM MstTerritory WHERE TerrStatus = '1'"
         wsSQL = wsSQL & "ORDER BY TerrCode "
-        G = Me.CreateGraphics()
-        Call Ini_Combo(2, wsSQL, (cboCusShipTerrCode.Left * G.DpiX / 1024) + (tabDetailInfo.Left * G.DpiX / 1024), (cboCusShipTerrCode.Top * G.DpiY / 1024) + (cboCusShipTerrCode.Height * G.DpiY / 1024) + (tabDetailInfo.Top * G.DpiY / 1024), tblCommon, "C001", "TBLTERR", (Me.Width * G.DpiX / 1024), (Me.Height * G.DpiY / 1024), G)
-        G.Dispose()
+        location = Get_Control_Location(cboCusShipTerrCode)
+        Call Ini_Combo(2, wsSQL, location.X, location.Y + cboCusShipTerrCode.Height, tblCommon, "C001", "TBLTERR", Me.Width, Me.Height)
 
         tblCommon.Visible = True
+        tblCommon.BringToFront()
         tblCommon.Focus()
         Me.Cursor = System.Windows.Forms.Cursors.Default
     End Sub
@@ -2916,6 +2933,7 @@ tblCommon_LostFocus_Err:
 
     Private Sub cboCusShipTerrCode2_DropDown(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cboCusShipTerrCode2.DropDown
         Dim wsSQL As String
+        Dim location As Point
 
         Me.Cursor = System.Windows.Forms.Cursors.WaitCursor
 
@@ -2923,11 +2941,11 @@ tblCommon_LostFocus_Err:
 
         wsSQL = "SELECT TerrCode, TerrDesc FROM MstTerritory WHERE TerrStatus = '1'"
         wsSQL = wsSQL & "ORDER BY TerrCode "
-        G = Me.CreateGraphics()
-        Call Ini_Combo(2, wsSQL, (cboCusShipTerrCode2.Left * G.DpiX / 1024) + (tabDetailInfo.Left * G.DpiX / 1024), (cboCusShipTerrCode2.Top * G.DpiY / 1024) + (cboCusShipTerrCode2.Height * G.DpiY / 1024) + (tabDetailInfo.Top * G.DpiY / 1024S), tblCommon, "C001", "TBLTERR", (Me.Width * G.DpiX / 1024), (Me.Height * G.DpiY / 1024), G)
-        G.Dispose()
+        location = Get_Control_Location(cboCusShipTerrCode2)
+        Call Ini_Combo(2, wsSQL, location.X, location.Y + cboCusShipTerrCode2.Height, tblCommon, "C001", "TBLTERR", Me.Width, Me.Height)
 
         tblCommon.Visible = True
+        tblCommon.BringToFront()
         tblCommon.Focus()
         Me.Cursor = System.Windows.Forms.Cursors.Default
     End Sub
@@ -2966,6 +2984,7 @@ tblCommon_LostFocus_Err:
 
     Private Sub cboCusPayCode_DropDown(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cboCusPayCode.DropDown
         Dim wsSQL As String
+        Dim location As Point
 
         Me.Cursor = System.Windows.Forms.Cursors.WaitCursor
 
@@ -2973,11 +2992,11 @@ tblCommon_LostFocus_Err:
 
         wsSQL = "SELECT PayCode, PayDesc, PayDay FROM MstPayTerm WHERE PayStatus = '1'"
         wsSQL = wsSQL & "ORDER BY PayCode "
-        G = Me.CreateGraphics()
-        Call Ini_Combo(3, wsSQL, (cboCusPayCode.Left * G.DpiX / 1024) + (tabDetailInfo.Left * G.DpiX / 1024), (cboCusPayCode.Top * G.DpiY / 1024) + (cboCusPayCode.Height * G.DpiY / 1024) + (tabDetailInfo.Top * G.DpiY / 1024), tblCommon, "C001", "TBLPYT", (Me.Width * G.DpiX / 1024), (Me.Height * G.DpiY / 1024), G)
-        G.Dispose()
-
+        location = Get_Control_Location(cboCusPayCode)
+        Call Ini_Combo(3, wsSQL, location.X, location.Y + cboCusPayCode.Height, tblCommon, "C001", "TBLPYT", Me.Width, Me.Height)
+        
         tblCommon.Visible = True
+        tblCommon.BringToFront()
         tblCommon.Focus()
         Me.Cursor = System.Windows.Forms.Cursors.Default
     End Sub
@@ -3016,6 +3035,7 @@ tblCommon_LostFocus_Err:
 
     Private Sub cboCusCurr_DropDown(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cboCusCurr.DropDown
         Dim wsSQL As String
+        Dim location As Point
 
         Me.Cursor = System.Windows.Forms.Cursors.WaitCursor
 
@@ -3023,11 +3043,11 @@ tblCommon_LostFocus_Err:
 
         wsSQL = "SELECT DISTINCT ExcCurr FROM MstExchangeRate WHERE ExcStatus = '1'"
         wsSQL = wsSQL & "ORDER BY ExcCurr "
-        G = Me.CreateGraphics()
-        Call Ini_Combo(1, wsSQL, (cboCusCurr.Left * G.DpiX / 1024) + (tabDetailInfo.Left * G.DpiX / 1024), (cboCusCurr.Top * G.DpiY / 1024) + (cboCusCurr.Height * G.DpiY / 1024) + (tabDetailInfo.Top * G.DpiY / 1024), tblCommon, "C001", "TBLCUR", (Me.Width * G.DpiX / 1024), (Me.Height * G.DpiY / 1024), G)
-        G.Dispose()
-
+        location = Get_Control_Location(cboCusCurr)
+        Call Ini_Combo(1, wsSQL, location.X, location.Y + cboCusCurr.Height, tblCommon, "C001", "TBLCUR", Me.Width, Me.Height)
+        
         tblCommon.Visible = True
+        tblCommon.BringToFront()
         tblCommon.Focus()
         Me.Cursor = System.Windows.Forms.Cursors.Default
     End Sub
@@ -3059,6 +3079,7 @@ tblCommon_LostFocus_Err:
 
     Private Sub cboCusSaleCode_DropDown(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cboCusSaleCode.DropDown
         Dim wsSQL As String
+        Dim location As Point
 
         Me.Cursor = System.Windows.Forms.Cursors.WaitCursor
 
@@ -3067,11 +3088,11 @@ tblCommon_LostFocus_Err:
         wsSQL = "SELECT SaleCode, SaleName FROM MstSalesman WHERE SaleStatus = '1'"
         wsSQL = wsSQL & " and SaleType = 'S' "
         wsSQL = wsSQL & "ORDER BY SaleCode "
-        G = Me.CreateGraphics()
-        Call Ini_Combo(2, wsSQL, (cboCusSaleCode.Left * G.DpiX / 1024) + (tabDetailInfo.Left * G.DpiX / 1024), (cboCusSaleCode.Top * G.DpiY / 1024) + (cboCusSaleCode.Height * G.DpiY / 1024) + (tabDetailInfo.Top * G.DpiY / 1024), tblCommon, "C001", "TBLSLM", (Me.Width * G.DpiX / 1024), (Me.Height * G.DpiY / 1024), G)
-        G.Dispose()
+        location = Get_Control_Location(cboCusSaleCode)
+        Call Ini_Combo(2, wsSQL, location.X, location.Y + cboCusSaleCode.Height, tblCommon, "C001", "TBLSLM", Me.Width, Me.Height)
 
         tblCommon.Visible = True
+        tblCommon.BringToFront()
         tblCommon.Focus()
         Me.Cursor = System.Windows.Forms.Cursors.Default
     End Sub

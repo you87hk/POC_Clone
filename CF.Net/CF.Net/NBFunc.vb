@@ -59,25 +59,25 @@ Module NBFunc
             Select Case gsDteFmt
                 Case "MDY"
                     'UPGRADE_WARNING: Couldn't resolve default property of object inDate. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
-                    Dsp_Date = Format(inDate, "mm/dd/yyyy")
+                    Dsp_Date = Format(CDate(inDate), "MM/dd/yyyy")
                 Case "YMD"
                     'UPGRADE_WARNING: Couldn't resolve default property of object inDate. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
-                    Dsp_Date = Format(inDate, "yyyy/mm/dd")
+                    Dsp_Date = Format(CDate(inDate), "yyyy/MM/dd")
                 Case Else
                     'UPGRADE_WARNING: Couldn't resolve default property of object inDate. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
-                    Dsp_Date = Format(inDate, "dd/mm/yyyy")
+                    Dsp_Date = Format(CDate(inDate), "dd/MM/yyyy")
             End Select
         Else
             Select Case gsDteFmt
                 Case "MDY"
                     'UPGRADE_WARNING: Couldn't resolve default property of object inDate. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
-                    Dsp_Date = Format(inDate, "mm/dd/yyyy HH:MM:SS")
+                    Dsp_Date = Format(CDate(inDate), "MM/dd/yyyy HH:MM:SS")
                 Case "YMD"
                     'UPGRADE_WARNING: Couldn't resolve default property of object inDate. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
-                    Dsp_Date = Format(inDate, "yyyy/mm/dd HH:MM:SS")
+                    Dsp_Date = Format(CDate(inDate), "yyyy/MM/dd HH:MM:SS")
                 Case Else
                     'UPGRADE_WARNING: Couldn't resolve default property of object inDate. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
-                    Dsp_Date = Format(inDate, "dd/mm/yyyy HH:MM:SS")
+                    Dsp_Date = Format(CDate(inDate), "dd/MM/yyyy HH:MM:SS")
             End Select
         End If
 
@@ -509,16 +509,16 @@ Module NBFunc
         If inCode = "SCRHDR" Then
             Get_Caption = ""
             For Each dr In inArray.Rows
-                If dr.Item(0) = "ID" Then
-                    Get_Caption = dr.Item(1)
+                If dr.Item(0).ToString.ToUpper = "ID" Then
+                    Get_Caption = dr.Item(1).ToString
                     Exit For
                 End If
             Next
         End If
 
         For Each dr In inArray.Rows
-            If dr.Item(0) = inCode Then
-                Get_Caption = Get_Caption & dr.Item(1)
+            If dr.Item(0).ToString.ToUpper = inCode Then
+                Get_Caption = Get_Caption & dr.Item(1).ToString
                 Exit For
             End If
         Next
@@ -686,7 +686,7 @@ Err_Handler:
 
     End Sub
 
-    Public Sub Ini_Combo(ByRef inNoOfCol As Short, ByRef inCriteria As String, ByRef Xpos As Integer, ByRef Ypos As Integer, ByRef inGrid As C1.Win.C1TrueDBGrid.C1TrueDBGrid, ByRef InPgmID As String, ByRef inKey As String, ByRef FrmWidth As Integer, ByRef FrmHeight As Integer, ByVal G As Graphics)
+    Public Sub Ini_Combo(ByRef inNoOfCol As Short, ByRef inCriteria As String, ByRef Xpos As Integer, ByRef Ypos As Integer, ByRef inGrid As C1.Win.C1TrueDBGrid.C1TrueDBGrid, ByRef InPgmID As String, ByRef inKey As String, ByRef FrmWidth As Integer, ByRef FrmHeight As Integer)
 
         'inNoOfCol = No. of Columns in the drop down grid
         'inCriteria = Searching Criteria for filling the results to the grid
@@ -706,14 +706,14 @@ Err_Handler:
         Dim wiCtr As Short
         Dim wlRecCtr As Integer
         Dim wlWidth As Integer
-        Dim colC As New C1.Win.C1TrueDBGrid.C1DataColumn
+        'Dim colC As New C1.Win.C1TrueDBGrid.C1DataColumn
 
         System.Windows.Forms.Application.DoEvents() 'DoEvents is to let the got_focus trigger first
         inGrid.ClearFields()
 
         With inGrid
-            .Height = 2000 * G.DpiY / 1024
-            .Width = 3500 * G.DpiX / 1024
+            .Height = 2000
+            .Width = 3500
             .EmptyRows = True
             .AllowColMove = False
             .AllowColSelect = False
@@ -729,7 +729,7 @@ Err_Handler:
 
             For wiCtr = 0 To inNoOfCol - 1
                 'colC = .Columns.Add(wiCtr)
-                .Columns.Insert(wiCtr, colC)
+                .Columns.Insert(wiCtr, New C1.Win.C1TrueDBGrid.C1DataColumn)
                 .Splits(0).DisplayColumns(wiCtr).Visible = True
             Next
 
@@ -766,13 +766,14 @@ Err_Handler:
                 Dim dr As System.Data.DataRow
                 For Each dr In rsSPC.Rows
                     If wiCol < inNoOfCol Then
-                        .Splits(0).DisplayColumns(wiCol).Width = (Len(ReadRs(rsSPC, "SCRFLDNAME")) * 120)
+                        .Splits(0).DisplayColumns(wiCol).Width = (Len(dr.Item("SCRFLDNAME")) * 120)
                         'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
-                        .Columns(wiCol).Caption = ReadRs(rsSPC, "SCRFLDNAME")
+                        .Columns(wiCol).Caption = dr.Item("SCRFLDNAME")
                         wlWidth = wlWidth + .Splits(0).DisplayColumns(wiCol).Width
                     End If
                     wiCol = wiCol + 1
                 Next
+
                 'rsSPC.MoveFirst()
                 'wlWidth = 0
                 'Do While Not rsSPC.EOF
@@ -785,14 +786,13 @@ Err_Handler:
                 '    wiCol = wiCol + 1
                 '    rsSPC.MoveNext()
                 'Loop
-                .Width = wlWidth * G.DpiX / 1024
+                .Width = wlWidth
             End If
 
             dataAdapt.Dispose()
             rsSPC.Clear()
             'UPGRADE_NOTE: Object rsSPC may not be destroyed until it is garbage collected. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6E35BFF6-CD74-4B09-9689-3E1A43DF8969"'
             rsSPC = Nothing
-
             'rsCommon.Open(inCriteria, cnCon, ADODB.CursorTypeEnum.adOpenStatic, ADODB.LockTypeEnum.adLockOptimistic)
 
             Try
@@ -805,6 +805,9 @@ Err_Handler:
             End Try
 
             'waCommon.ReDim(0, -1, 0, inNoOfCol - 1)
+            For i = 0 To inNoOfCol - 1
+                waCommon.Columns.Add(.Columns(i).Caption)
+            Next
 
             If rsCommon.Rows.Count > 0 Then
                 wlRecCtr = 0
@@ -812,12 +815,13 @@ Err_Handler:
                 For Each dr In rsCommon.Rows
                     wlRecCtr = wlRecCtr + 1
                     If wlRecCtr = 1 Then inGrid.Bookmark = inGrid.Row
+                    Dim newRow As DataRow = Nothing
+                    newRow = waCommon.NewRow()
                     For wiCtr = 0 To inNoOfCol - 1
                         'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
-                        Dim newRow As DataRow = waCommon.NewRow()
-                        newRow.Item(wiCtr) = ReadRs(rsCommon, wiCtr)
-                        waCommon.Rows.Add(newRow)
+                        newRow.Item(wiCtr) = dr.Item(wiCtr)
                     Next
+                    waCommon.Rows.Add(newRow)
                 Next
                 'rsCommon.MoveFirst()
                 'Do While Not rsCommon.EOF
@@ -832,21 +836,6 @@ Err_Handler:
                 'Loop
                 .Bookmark = 0
 
-                'Resize the combo
-                wlWidth = 0
-                For wiCtr = 0 To inNoOfCol - 1
-                    If .Splits(0).DisplayColumns(wiCtr).Width < (rsCommon.Columns(wiCtr).MaxLength * 120) Then
-                        .Splits(0).DisplayColumns(wiCtr).Width = (rsCommon.Columns(wiCtr).MaxLength * 120)
-                    End If
-                    wlWidth = wlWidth + .Splits(0).DisplayColumns(wiCtr).Width
-                    Select Case rsCommon.Columns(wiCtr).GetType
-                        Case SqlDbType.BigInt.GetType, SqlDbType.Money.GetType, SqlDbType.Decimal.GetType, SqlDbType.Float.GetType, SqlDbType.Int.GetType, SqlDbType.Real.GetType, SqlDbType.SmallInt.GetType, SqlDbType.TinyInt.GetType
-                            .Splits(0).DisplayColumns(wiCtr).Style.HorizontalAlignment = C1.Win.C1TrueDBGrid.AlignHorzEnum.Far
-                            .Columns(wiCtr).NumberFormat = "#,##0.00########"
-                        Case Else
-                            .Splits(0).DisplayColumns(wiCtr).Style.HorizontalAlignment = C1.Win.C1TrueDBGrid.AlignHorzEnum.Near
-                    End Select
-                Next wiCtr
                 'rsCommon.MoveFirst()
                 'wlWidth = 0
                 'For wiCtr = 0 To inNoOfCol - 1
@@ -864,38 +853,54 @@ Err_Handler:
                 'Next wiCtr
 
                 If rsCommon.Rows.Count > 7 Then
-                    .Width = (wlWidth + 220) * G.DpiX / 1024
+                    .Width = (wlWidth + 220)
                 Else
-                    .Width = wlWidth * G.DpiX / 1024
+                    .Width = wlWidth
                 End If
 
-                If (.Width * G.DpiX / 1024) > FrmWidth - 300 Then
-                    .Width = (FrmWidth - 300) * G.DpiX / 1024
+                If .Width > FrmWidth - 300 Then
+                    .Width = (FrmWidth - 300)
                 End If
 
             End If
             inGrid.DataSource = waCommon
             .Rebind(True)
+            'Resize the combo
+            wlWidth = 0
+            For wiCtr = 0 To inNoOfCol - 1
+                'If .Splits(0).DisplayColumns(wiCtr).Width < (rsCommon.Columns(wiCtr).MaxLength * 120) Then
+                '    .Splits(0).DisplayColumns(wiCtr).Width = (rsCommon.Columns(wiCtr).MaxLength * 120)
+                'End If
+                .Splits(0).DisplayColumns(wiCtr).AutoSize()
+                .Splits(0).DisplayColumns(wiCtr).Width += 50
+                wlWidth = wlWidth + .Splits(0).DisplayColumns(wiCtr).Width
+                Select Case rsCommon.Columns(wiCtr).GetType
+                    Case SqlDbType.BigInt.GetType, SqlDbType.Money.GetType, SqlDbType.Decimal.GetType, SqlDbType.Float.GetType, SqlDbType.Int.GetType, SqlDbType.Real.GetType, SqlDbType.SmallInt.GetType, SqlDbType.TinyInt.GetType
+                        .Splits(0).DisplayColumns(wiCtr).Style.HorizontalAlignment = C1.Win.C1TrueDBGrid.AlignHorzEnum.Far
+                        .Columns(wiCtr).NumberFormat = "#,##0.00########"
+                    Case Else
+                        .Splits(0).DisplayColumns(wiCtr).Style.HorizontalAlignment = C1.Win.C1TrueDBGrid.AlignHorzEnum.Near
+                End Select
+            Next wiCtr
 
             dataAdapt.Dispose()
             rsCommon.Clear()
             'UPGRADE_NOTE: Object rsCommon may not be destroyed until it is garbage collected. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6E35BFF6-CD74-4B09-9689-3E1A43DF8969"'
             rsCommon = Nothing
 
-            If Xpos + (.Width * G.DpiX / 1024) > FrmWidth Then
-                Xpos = FrmWidth - (.Width * G.DpiX / 10024) - 100
-            End If
+            'If Xpos + .Width > FrmWidth Then
+            '    Xpos = FrmWidth - .Width - 100
+            'End If
 
-            .Left = Xpos * G.DpiX / 1024
+            .Left = Xpos ' * G.DpiX / 1024
 
-            If Ypos + (.Height * G.DpiY / 1024) > FrmHeight Then
-                'Amended by Lewis at 01082001
-                'Ypos = FrmHeight - .Height - 100
-                Ypos = Ypos - (.Height * G.DpiY / 1024) - 300
-            End If
+            'If Ypos + .Height > FrmHeight Then
+            '    'Amended by Lewis at 01082001
+            '    'Ypos = FrmHeight - .Height - 100
+            '    Ypos = Ypos - .Height - 300
+            'End If
 
-            .Top = Ypos * G.DpiY / 1024
-
+            .Top = Ypos ' * G.DpiY / 768
             'UPGRADE_NOTE: Object waCommon may not be destroyed until it is garbage collected. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6E35BFF6-CD74-4B09-9689-3E1A43DF8969"'
             waCommon = Nothing
         End With
@@ -920,10 +925,10 @@ Err_Handler:
 
         If InValue = "Y" Or InValue = "y" Then
             'UPGRADE_WARNING: Couldn't resolve default property of object Cnl.Value. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
-            'Cnl.Value = 1
+            CType(Cnl, CheckBox).Checked = 1
         Else
             'UPGRADE_WARNING: Couldn't resolve default property of object Cnl.Value. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
-            'Cnl.Value = 0
+            CType(Cnl, CheckBox).Checked = 0
         End If
 
     End Sub
@@ -1287,5 +1292,13 @@ chk_InpLenA_Err:
 Change_SQLDate_Err:
         MsgBox(Err.Description)
 
+    End Function
+
+    Public Function Get_Control_Location(ByVal control As Control) As Point
+        If control.Equals(control.TopLevelControl) Then
+            Return New Point(0, 0)
+        End If
+
+        Return control.Location + Get_Control_Location(control.Parent)
     End Function
 End Module
