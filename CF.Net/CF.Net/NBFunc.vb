@@ -591,7 +591,9 @@ Err_Handler:
             inArray = rsRcd.Copy()
         End If
         inArray.Columns().Add("SPCMNUSPA")
-        Dim rowCount As Integer = 0
+
+        wiMenuItem = 0
+
         Dim dr As System.Data.DataRow
         For Each dr In inArray.Rows
             inMenuCtl.DropDown.Items.Add(dr.Item(1))
@@ -601,16 +603,16 @@ Err_Handler:
                 'UPGRADE_WARNING: Couldn't resolve default property of object inArray.UpperBound. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
                 'UPGRADE_WARNING: Couldn't resolve default property of object inArray(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
                 'inArray(.UpperBound(1), 2) = "N"
-                inArray.Rows(rowCount).Item(2) = "N"
+                inArray.Rows(wiMenuItem).Item(2) = "N"
             Else
                 'UPGRADE_WARNING: Couldn't resolve default property of object inMenuCtl().Enabled. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
                 inMenuCtl.DropDown.Items(wiMenuItem).Enabled = True
                 'UPGRADE_WARNING: Couldn't resolve default property of object inArray.UpperBound. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
                 'UPGRADE_WARNING: Couldn't resolve default property of object inArray(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
                 'inArray(.UpperBound(1), 2) = "Y"
-                inArray.Rows(rowCount).Item(2) = "Y"
+                inArray.Rows(wiMenuItem).Item(2) = "Y"
             End If
-            rowCount += 1
+            wiMenuItem = wiMenuItem + 1
         Next
 
         'If rsRcd.RecordCount > 0 Then
@@ -1300,5 +1302,490 @@ Change_SQLDate_Err:
         End If
 
         Return control.Location + Get_Control_Location(control.Parent)
+    End Function
+
+    Public Sub SetDateMask(ByRef inMed As System.Windows.Forms.MaskedTextBox)
+
+        inMed.PromptChar = " "
+
+        Select Case gsDteFmt
+            Case "YMD"
+                'UPGRADE_ISSUE: MSMask.MaskEdBox property inMed.Format was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="CC4C7EC0-C903-48FC-ACCC-81861D12DA4A"'
+                inMed.TextMaskFormat = ""
+                inMed.Mask = "0000/00/00"
+                inMed.Text = New String(" ", 4) & "/" & New String(" ", 2) & "/" & New String(" ", 2)
+            Case Else
+                'UPGRADE_ISSUE: MSMask.MaskEdBox property inMed.Format was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="CC4C7EC0-C903-48FC-ACCC-81861D12DA4A"'
+                inMed.TextMaskFormat = ""
+                inMed.Mask = "00/00/0000"
+                inMed.Text = New String(" ", 2) & "/" & New String(" ", 2) & "/" & New String(" ", 4)
+        End Select
+
+    End Sub
+
+    Public Function getExcRate(ByRef inCurrCd As String, ByRef inDocDte As String, ByRef outRate As String, ByRef OutDesc As String) As Boolean
+
+        Dim dataAdapt As SqlClient.SqlDataAdapter = Nothing
+        Dim rsEXCRATE As New System.Data.DataTable
+        Dim Criteria As String
+        Dim tmpRate As Double
+        Dim tmpDte As String
+        Dim CtlYr As String
+        Dim CtlMon As String
+
+        If Not IsDate(inDocDte) Then
+            inDocDte = Dsp_Date(gsDateFrom)
+        End If
+        tmpDte = CStr(CDate(inDocDte))
+        CtlYr = Format(tmpDte, "yyyy")
+        CtlMon = Format(tmpDte, "mm")
+
+        Criteria = ""
+
+        Criteria = Criteria & "SELECT EXCRATE, EXCBRATE, EXCDESC FROM mstEXCHANGERATE "
+        Criteria = Criteria & "WHERE EXCCURR = '" & Set_Quote(inCurrCd) & "' "
+        Criteria = Criteria & "AND EXCYR = '" & Set_Quote(CtlYr) & "' "
+        Criteria = Criteria & "AND EXCMN = '" & To_Value(CtlMon) & "' "
+
+        'rsEXCRATE.Open(Criteria, cnCon, ADODB.CursorTypeEnum.adOpenStatic, ADODB.LockTypeEnum.adLockOptimistic)
+
+        Try
+            dataAdapt = New SqlClient.SqlDataAdapter(Criteria, cnCon)
+            dataAdapt.Fill(rsEXCRATE)
+        Catch ex As SqlClient.SqlException
+            MsgBox(ex.Message)
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+
+        If rsEXCRATE.Rows.Count > 0 Then
+            tmpRate = System.Math.Round(To_Value(ReadRs(rsEXCRATE, "EXCRATE")), giExrDp)
+            outRate = CStr(tmpRate)
+            'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+            OutDesc = ReadRs(rsEXCRATE, "EXCDESC")
+            getExcRate = True
+        Else
+            outRate = CStr(0)
+            OutDesc = ""
+            getExcRate = False
+        End If
+
+        dataAdapt.Dispose()
+        rsEXCRATE.Clear()
+        'UPGRADE_NOTE: Object rsEXCRATE may not be destroyed until it is garbage collected. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6E35BFF6-CD74-4B09-9689-3E1A43DF8969"'
+        rsEXCRATE = Nothing
+
+    End Function
+
+    Public Function Get_CompanyFlag(ByVal inCompInfo As String) As String
+        ' Usage : will get the specified info from the Company Profile
+        ' inCompInfo  - Column name
+        ' outCompInfo - Column value in the table
+
+        Dim dataAdapt As SqlClient.SqlDataAdapter = Nothing
+        Dim rsCOMFIX As New System.Data.DataTable
+        Dim Criteria As String
+
+        Get_CompanyFlag = ""
+
+        If Trim(inCompInfo) = "" Then Exit Function
+
+        Criteria = "SELECT " & Set_Quote(inCompInfo) & " COMPINFO "
+        Criteria = Criteria & " FROM mstCompany WHERE CMPID = " & gsCompID
+        'rsCOMFIX.Open(Criteria, cnCon, ADODB.CursorTypeEnum.adOpenStatic, ADODB.LockTypeEnum.adLockOptimistic)
+
+        Try
+            dataAdapt = New SqlClient.SqlDataAdapter(Criteria, cnCon)
+            dataAdapt.Fill(rsCOMFIX)
+        Catch ex As SqlClient.SqlException
+            MsgBox(ex.Message)
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+
+        If rsCOMFIX.Rows.Count > 0 Then
+            'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+            Get_CompanyFlag = ReadRs(rsCOMFIX, "COMPINFO")
+        Else
+            'MsgBox "Can't Get Company Info"
+            MsgBox("找不到公司資料")
+        End If
+
+        dataAdapt.Dispose()
+        rsCOMFIX.Clear()
+        'UPGRADE_NOTE: Object rsCOMFIX may not be destroyed until it is garbage collected. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6E35BFF6-CD74-4B09-9689-3E1A43DF8969"'
+        rsCOMFIX = Nothing
+
+    End Function
+
+    Public Function Get_TableInfo(ByVal inTable As String, ByVal inCrt As String, ByVal inColumnName As String) As String
+        'Usage       : Read the Control Flag of the System Profile Table and returns the value
+        'Parameters  : Column Name
+        'Return Value: Column Value in the Database
+
+        Dim dataAdapt As SqlClient.SqlDataAdapter = Nothing
+        Dim rsRcd As New System.Data.DataTable
+        Dim Criteria As String
+
+        Get_TableInfo = ""
+
+        Criteria = "SELECT " & Set_Quote(inColumnName)
+        Criteria = Criteria & " FROM " & inTable
+        Criteria = Criteria & " WHERE " & inCrt
+
+        'rsRcd.Open(Criteria, cnCon, ADODB.CursorTypeEnum.adOpenStatic, ADODB.LockTypeEnum.adLockOptimistic)
+
+        Try
+            dataAdapt = New SqlClient.SqlDataAdapter(Criteria, cnCon)
+            dataAdapt.Fill(rsRcd)
+        Catch ex As SqlClient.SqlException
+            MsgBox(ex.Message)
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+
+        If rsRcd.Rows.Count > 0 Then
+            'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+            Get_TableInfo = ReadRs(rsRcd, inColumnName)
+        End If
+
+        dataAdapt.Dispose()
+        rsRcd.Clear()
+        'UPGRADE_NOTE: Object rsRcd may not be destroyed until it is garbage collected. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6E35BFF6-CD74-4B09-9689-3E1A43DF8969"'
+        rsRcd = Nothing
+
+    End Function
+
+    Public Function Dsp_MedDate(ByRef inText As String) As String
+
+        If Trim(inText) = "" Then
+            Dsp_MedDate = "    /  /  "
+        Else
+            If IsDate(inText) Then
+                Dsp_MedDate = Format(CDate(inText), "yyyy/MM/dd")
+                Dsp_MedDate = Left(Dsp_MedDate, 4) & "/" & Mid(Dsp_MedDate, 6, 2) & "/" & Right(Dsp_MedDate, 2)
+            Else
+                Dsp_MedDate = "    /  /  "
+            End If
+        End If
+
+    End Function
+
+    Public Sub Ini_PopMenu(ByRef inMenuCtl As System.Windows.Forms.ToolStripMenuItem, ByRef InPgmID As String, Optional ByRef inArray As System.Data.DataTable = Nothing)
+
+        Dim dataAdapt As SqlClient.SqlDataAdapter = Nothing
+        Dim wsSQL As String
+        Dim rsRcd As New System.Data.DataTable
+        Dim wiMenuItem As Short
+        Dim wiCtr As Short
+        Dim wiStop As Short
+
+        wiStop = False
+        wiCtr = 0
+
+        On Error GoTo Err_Handler
+
+        Do While Not wiStop
+            If wiCtr = 0 Then
+                'UPGRADE_WARNING: Couldn't resolve default property of object inMenuCtl.Caption. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+                inMenuCtl.DropDownItems.Clear()
+            Else
+                'UPGRADE_ISSUE: Unload inMenuCtl() was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="875EBAD7-D704-4539-9969-BC7DBDAA62A2"'
+                'Unload(inMenuCtl(wiCtr))
+                inMenuCtl.DropDownItems().RemoveAt(wiCtr)
+            End If
+            wiCtr = wiCtr + 1
+        Loop
+
+        'UPGRADE_WARNING: Couldn't resolve default property of object inArray.ReDim. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        'inArray.ReDim(0, -1, 0, 2)
+
+
+        wsSQL = "SELECT SCRFLDID, SCRFLDNAME "
+        wsSQL = wsSQL & " FROM SYSSCRCAPTION WHERE SCRTYPE = 'PMU' "
+        wsSQL = wsSQL & " AND SCRPGMID = '" & InPgmID & "' "
+        wsSQL = wsSQL & " AND SCRLANGID = '" & gsLangID & "' "
+        wsSQL = wsSQL & " ORDER BY SCRSEQNO "
+
+
+        'rsRcd.Open(wsSQL, cnCon, ADODB.CursorTypeEnum.adOpenStatic, ADODB.LockTypeEnum.adLockOptimistic)
+
+        dataAdapt = New SqlClient.SqlDataAdapter(wsSQL, cnCon)
+        dataAdapt.Fill(rsRcd)
+
+        wiMenuItem = 0
+
+        If rsRcd.Rows.Count > 0 Then
+            Dim dr As System.Data.DataRow
+            For Each dr In rsRcd.Rows
+                If Not IsNothing(inArray) Then
+                    inMenuCtl.DropDown.Items.Add(dr.Item(1))
+                    inMenuCtl.DropDown.Items(wiMenuItem).Enabled = True
+                    inMenuCtl.DropDown.Items(wiMenuItem).Text = dr.Item("SCRFLDNAME")
+                    With inArray
+                        Dim newRow As System.Data.DataRow = .NewRow()
+                        newRow(0) = dr.Item("SCRFLDID")
+                        newRow(1) = dr.Item("SCRFLDNAME")
+                        .Rows.Add(newRow)
+
+                        If Chk_UserRight(gsUserID, dr.Item("SCRFLDID")) = False Then
+                            inMenuCtl.DropDown.Items(wiMenuItem).Enabled = False
+                            inArray(wiMenuItem).Item(2) = "N"
+                        Else
+                            inMenuCtl.DropDown.Items(wiMenuItem).Enabled = True
+                            inArray(wiMenuItem).Item(2) = "Y"
+                        End If
+                    End With
+                Else
+                    inMenuCtl.DropDown.Items(wiMenuItem).Enabled = True
+                    inMenuCtl.DropDown.Items(wiMenuItem).Text = dr.Item("SCRFLDNAME")
+                End If
+                wiMenuItem = wiMenuItem + 1
+            Next
+        End If
+
+        'If rsRcd.Rows.Count > 0 Then
+        '    rsRcd.MoveFirst()
+        '    Do While Not rsRcd.EOF
+        '        'UPGRADE_NOTE: IsMissing() was changed to IsNothing(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="8AE1CB93-37AB-439A-A4FF-BE3B6760BB23"'
+        '        If Not IsNothing(inArray) Then
+        '            If wiMenuItem > 0 Then inMenuCtl.Load(wiMenuItem)
+        '            'UPGRADE_WARNING: Couldn't resolve default property of object inMenuCtl().Enabled. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '            inMenuCtl(wiMenuItem).Enabled = True
+        '            'UPGRADE_WARNING: Couldn't resolve default property of object inMenuCtl(wiMenuItem).Caption. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '            'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '            inMenuCtl(wiMenuItem).Caption = ReadRs(rsRcd, "SCRFLDNAME")
+        '            With inArray
+        '                'UPGRADE_WARNING: Couldn't resolve default property of object inArray.AppendRows. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                .AppendRows()
+        '                'UPGRADE_WARNING: Couldn't resolve default property of object inArray.UpperBound. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                'UPGRADE_WARNING: Couldn't resolve default property of object inArray(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                inArray(.UpperBound(1), 0) = ReadRs(rsRcd, "SCRFLDID")
+        '                'UPGRADE_WARNING: Couldn't resolve default property of object inArray.UpperBound. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                'UPGRADE_WARNING: Couldn't resolve default property of object inArray(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                inArray(.UpperBound(1), 1) = ReadRs(rsRcd, "SCRFLDNAME")
+
+        '                'If ReadRs(rsRcd, "SPCMNUSPA") = "Y" Then
+        '                '    Load inMenuCtl(wiMenuItem + 1)
+        '                '    inMenuCtl(wiMenuItem + 1).Enabled = True
+        '                '    inMenuCtl(wiMenuItem + 1).Caption = "-"
+        '                '    .AppendRows
+        '                '    inArray(.UpperBound(1), 0) = "-"
+        '                'End If
+        '                'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                If Chk_UserRight(gsUserID, ReadRs(rsRcd, "SCRFLDID")) = False Then
+        '                    'UPGRADE_WARNING: Couldn't resolve default property of object inMenuCtl().Enabled. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                    inMenuCtl(wiMenuItem).Enabled = False
+        '                    'UPGRADE_WARNING: Couldn't resolve default property of object inArray.UpperBound. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                    'UPGRADE_WARNING: Couldn't resolve default property of object inArray(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                    inArray(.UpperBound(1), 2) = "N"
+        '                Else
+        '                    'UPGRADE_WARNING: Couldn't resolve default property of object inMenuCtl().Enabled. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                    inMenuCtl(wiMenuItem).Enabled = True
+        '                    'UPGRADE_WARNING: Couldn't resolve default property of object inArray.UpperBound. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                    'UPGRADE_WARNING: Couldn't resolve default property of object inArray(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '                    inArray(.UpperBound(1), 2) = "Y"
+        '                End If
+        '            End With
+        '        Else
+        '            If wiMenuItem > 0 Then inMenuCtl.Load(wiMenuItem)
+        '            'UPGRADE_WARNING: Couldn't resolve default property of object inMenuCtl().Enabled. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '            inMenuCtl(wiMenuItem).Enabled = True
+        '            'UPGRADE_WARNING: Couldn't resolve default property of object inMenuCtl(wiMenuItem).Caption. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '            'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '            inMenuCtl(wiMenuItem).Caption = ReadRs(rsRcd, "SCRFLDNAME")
+        '            'If ReadRs(rsRcd, "SPCMNUSPA") = "Y" Then
+        '            '    Load inMenuCtl(wiMenuItem + 1)
+        '            '    inMenuCtl(wiMenuItem + 1).Enabled = True
+        '            '    inMenuCtl(wiMenuItem + 1).Caption = "-"
+        '            'End If
+        '            'UPGRADE_WARNING: Couldn't resolve default property of object inMenuCtl().Enabled. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        '            inMenuCtl(wiMenuItem).Enabled = True
+        '        End If
+        '        wiMenuItem = wiMenuItem + 1
+        '        rsRcd.MoveNext()
+        '    Loop
+        'End If
+
+        Exit Sub
+
+Err_Handler:
+        wiStop = True
+        Resume Next
+
+    End Sub
+
+    Public Function Chk_Date(ByRef inDteCtl As System.Windows.Forms.Control, Optional ByRef inCol As Object = Nothing) As Short
+
+        'inDteCtl : The control which needed to check
+        'inCol    : If the control is a Grid, inCol is to indicate the column no.
+
+        Dim inDate As String = String.Empty
+        Dim wsDay As String = String.Empty
+        Dim wsMth As String = String.Empty
+        Dim wsYear As String = String.Empty
+        Dim FirstSlash As Short
+        Dim SecondSlash As Short
+
+        Chk_Date = False
+
+        'UPGRADE_NOTE: IsMissing() was changed to IsNothing(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="8AE1CB93-37AB-439A-A4FF-BE3B6760BB23"'
+        If IsNothing(inCol) Then
+            inDate = inDteCtl.Text
+        Else
+            'UPGRADE_WARNING: Couldn't resolve default property of object inDteCtl.Columns. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+            'inDate = inDteCtl.Columns(inCol).Text
+            MsgBox("NBFunc.vb Chk_Date unhandle conversion")
+        End If
+
+        If Len(Trim(inDate)) = 8 Then
+            inDate = Left(inDate, 4) & "/" & Mid(inDate, 5, 2) & "/" & Right(inDate, 2)
+        End If
+
+        'UPGRADE_NOTE: IsMissing() was changed to IsNothing(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="8AE1CB93-37AB-439A-A4FF-BE3B6760BB23"'
+        If Not IsNothing(inCol) Then
+            ' Check the slash exists
+            If Not inDate Like "*/*/*" Then
+                If inDate Like "*/*" Then
+                    FirstSlash = InStr(1, inDate, "/")
+                    'if lenght is 7, assume 2 character is for year
+                    Select Case Len(inDate)
+                        Case 7
+                            Select Case FirstSlash
+                                Case 3
+                                    inDate = Left(inDate, 5) & "/" & Right(inDate, 2)
+                                Case 5
+                                    inDate = Left(inDate, 2) & "/" & Right(inDate, 5)
+                                Case Else
+                                    'wrong position of the slash
+                                    Exit Function
+                            End Select
+                        Case 9
+                            Select Case gsDteFmt
+                                Case "YMD"
+                                    Select Case FirstSlash
+                                        Case 5
+                                            inDate = Left(inDate, 7) & "/" & Right(inDate, 2)
+                                        Case 7
+                                            inDate = Left(inDate, 4) & "/" & Right(inDate, 5)
+                                        Case Else
+                                            'wrong position of the slash
+                                            Exit Function
+                                    End Select
+                                Case "MDY", "DMY"
+                                    Select Case FirstSlash
+                                        Case 3
+                                            inDate = Left(inDate, 5) & "/" & Right(inDate, 4)
+                                        Case 5
+                                            inDate = Left(inDate, 2) & "/" & Right(inDate, 7)
+                                        Case Else
+                                            'wrong position of the slash
+                                            Exit Function
+                                    End Select
+                            End Select
+                        Case Else
+                            'wrong length of the date
+                            Exit Function
+                    End Select
+                Else
+                    'no slash in the date
+                    'if lenght is 6, assume 2 character is for year
+                    Select Case Len(inDate)
+                        Case 6
+                            inDate = Left(inDate, 2) & "/" & Mid(inDate, 3, 2) & "/" & Right(inDate, 2)
+                        Case 9
+                            Select Case gsDteFmt
+                                Case "YMD"
+                                    inDate = Left(inDate, 4) & "/" & Mid(inDate, 5, 2) & "/" & Right(inDate, 2)
+                                Case "MDY", "DMY"
+                                    inDate = Left(inDate, 2) & "/" & Mid(inDate, 3, 2) & "/" & Right(inDate, 4)
+                            End Select
+                        Case Else
+                            'wrong length of the date
+                            Exit Function
+                    End Select
+                End If
+            End If
+        End If
+
+        If Trim(inDate) = "/  /" Or Trim(inDate) = "" Then Exit Function
+
+        FirstSlash = InStr(1, inDate, "/")
+        SecondSlash = InStr(FirstSlash + 1, inDate, "/")
+
+        Select Case gsDteFmt
+            Case "DMY"
+                wsDay = Trim(Mid(inDate, 1, FirstSlash - 1))
+                wsMth = Trim(Mid(inDate, FirstSlash + 1, 2))
+                wsYear = Trim(Mid(inDate, SecondSlash + 1))
+            Case "MDY"
+                wsMth = Trim(Mid(inDate, 1, FirstSlash - 1))
+                wsDay = Trim(Mid(inDate, FirstSlash + 1, 2))
+                wsYear = Trim(Mid(inDate, SecondSlash + 1))
+            Case "YMD"
+                wsYear = Trim(Mid(inDate, 1, FirstSlash - 1))
+                wsMth = Trim(Mid(inDate, FirstSlash + 1, 2))
+                wsDay = Trim(Mid(inDate, SecondSlash + 1))
+        End Select
+
+        If Val(wsDay) < 1 Or Val(wsDay) > 31 Or Val(wsMth) < 1 Or Val(wsMth) > 12 Or Len(wsYear) = 1 Or Len(wsYear) = 3 Then
+            Exit Function
+        Else
+            If Val(wsMth) <> 12 Then
+                If Val(wsDay) > Val(CStr(System.DateTime.FromOADate(DateSerial(Val(wsYear), Val(wsMth) + 1, 1).ToOADate - DateSerial(Val(wsYear), Val(wsMth), 1).ToOADate))) Then
+                    Exit Function
+                End If
+            End If
+        End If
+
+        If Len(wsYear) = 2 Then
+            If Val(wsYear) >= 50 Then
+                wsYear = "19" & wsYear
+            Else
+                wsYear = "20" & wsYear
+            End If
+        End If
+
+        wsDay = New String("0", 2 - Len(wsDay)) & wsDay
+        wsMth = New String("0", 2 - Len(wsMth)) & wsMth
+
+        If Trim(wsDay) = "" Or Trim(wsMth) = "" Or Trim(wsYear) = "" Then Exit Function
+
+        Select Case gsDteFmt
+            Case "DMY"
+                inDate = wsDay & "/" & wsMth & "/" & wsYear
+            Case "MDY"
+                inDate = wsMth & "/" & wsDay & "/" & wsYear
+            Case "YMD"
+                inDate = wsYear & "/" & wsMth & "/" & wsDay
+        End Select
+
+        'UPGRADE_NOTE: IsMissing() was changed to IsNothing(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="8AE1CB93-37AB-439A-A4FF-BE3B6760BB23"'
+        If IsNothing(inCol) Then
+            inDteCtl.Text = inDate
+        Else
+            'UPGRADE_WARNING: Couldn't resolve default property of object inDteCtl.Columns. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+            'inDteCtl.Columns(inCol).Text = inDate
+            MsgBox("NBFunc.vb Chk_Date unhandle conversion")
+        End If
+
+        Chk_Date = True
+
+    End Function
+
+    Public Function Set_MedDate(ByRef inText As String) As String
+
+        If Trim(inText) = "/  /" Then
+            Set_MedDate = ""
+        Else
+            Set_MedDate = inText
+        End If
+
+        If Len(Trim(inText)) = 8 Then
+            Set_MedDate = Left(inText, 4) & "/" & Mid(inText, 5, 2) & "/" & Right(inText, 2)
+        End If
+
     End Function
 End Module

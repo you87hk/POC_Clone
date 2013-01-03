@@ -1723,7 +1723,7 @@ RowColChange_Err:
         Call SetSPPara(adcmdSave, 47, "CUS")
         Call SetSPPara(adcmdSave, 48, "")
 
-        adcmdSave.ExecuteNonQuery()
+        'adcmdSave.Execute()
         'UPGRADE_WARNING: Couldn't resolve default property of object GetSPPara(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
         wsCode = GetSPPara(adcmdSave, 49)
         'UPGRADE_WARNING: Couldn't resolve default property of object GetSPPara(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
@@ -3339,7 +3339,7 @@ tblCommon_LostFocus_Err:
 
 
         Dim dr As System.Data.DataRow
-        For Each dr In waResult.Rows
+        For Each dr In rsRcd.Rows
             'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
             wdAmt = Get_CusCreditAmt(wlKey, ReadRs(rsRcd, "SOHDCTLPRD"))
 

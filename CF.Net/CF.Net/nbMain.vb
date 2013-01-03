@@ -265,9 +265,9 @@
                 '    newForm.Show()
 
                 '    ''''
-                'Case "SN001"
-                '    newForm = New frmSN001
-                '    newForm.Show()
+            Case "SN001"
+                newForm = New frmSN001
+                newForm.Show()
 
                 'Case "SO001"
                 '    newForm = New frmSO001

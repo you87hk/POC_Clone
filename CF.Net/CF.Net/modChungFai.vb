@@ -286,4 +286,123 @@ Get_CusCreditAmt_Err:
 
     End Function
 
+    Public Function Chk_Curr(ByRef InCurr As String, ByRef inDate As String) As Boolean
+        Dim wsCtlDte As Object
+
+        Dim dataAdapt As SqlClient.SqlDataAdapter = Nothing
+        Dim rsCurCod As New System.Data.DataTable
+        Dim wsSQL As String
+
+        Chk_Curr = False
+
+        'UPGRADE_WARNING: Couldn't resolve default property of object wsCtlDte. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        wsCtlDte = IIf(Trim(inDate) = "" Or Trim(inDate) = "/  /", gsSystemDate, inDate)
+        wsSQL = "SELECT EXCCURR, EXCDESC FROM mstEXCHANGERATE WHERE "
+        'UPGRADE_WARNING: Couldn't resolve default property of object wsCtlDte. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        wsSQL = wsSQL & "EXCMN = '" & To_Value(VB6.Format(wsCtlDte, "MM")) & "' "
+        'UPGRADE_WARNING: Couldn't resolve default property of object wsCtlDte. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+        wsSQL = wsSQL & " AND EXCYR = '" & Set_Quote(VB6.Format(wsCtlDte, "YYYY")) & "' "
+        wsSQL = wsSQL & " AND EXCCURR = '" & Set_Quote(InCurr) & "' "
+        wsSQL = wsSQL & " AND EXCSTATUS = '1' "
+
+
+        'rsCurCod.Open(wsSQL, cnCon, ADODB.CursorTypeEnum.adOpenStatic, ADODB.LockTypeEnum.adLockOptimistic)
+
+        Try
+            dataAdapt = New SqlClient.SqlDataAdapter(wsSQL, cnCon)
+            dataAdapt.Fill(rsCurCod)
+        Catch ex As SqlClient.SqlException
+            MsgBox(ex.Message)
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+
+        If rsCurCod.Rows.Count <= 0 Then
+            dataAdapt.Dispose()
+            rsCurCod.Clear()
+            'UPGRADE_NOTE: Object rsCurCod may not be destroyed until it is garbage collected. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6E35BFF6-CD74-4B09-9689-3E1A43DF8969"'
+            rsCurCod = Nothing
+            Exit Function
+        End If
+
+        Chk_Curr = True
+
+        dataAdapt.Dispose()
+        rsCurCod.Clear()
+        'UPGRADE_NOTE: Object rsCurCod may not be destroyed until it is garbage collected. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6E35BFF6-CD74-4B09-9689-3E1A43DF8969"'
+        rsCurCod = Nothing
+
+    End Function
+
+    Public Function Chk_TrnHdDocNo(ByVal InTrnCd As String, ByVal InDocNo As String, ByRef OutStatus As String) As Boolean
+        Dim dataAdapt As SqlClient.SqlDataAdapter = Nothing
+        Dim rsRcd As New System.Data.DataTable
+        Dim wsSQL As String
+
+
+        Select Case InTrnCd
+            Case "SN", "QT"
+                wsSQL = "SELECT SNHDSTATUS STATUS FROM soaSNHD WHERE SNHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "VQ"
+                wsSQL = "SELECT VQHDSTATUS STATUS FROM soaVQHD WHERE VQHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "SO"
+                wsSQL = "SELECT SOHDSTATUS STATUS FROM soaSOHD WHERE SOHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "IV"
+                wsSQL = "SELECT IVHDSTATUS STATUS FROM soaIVHD WHERE IVHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "SP"
+                wsSQL = "SELECT SPHDSTATUS STATUS FROM soaSPHD WHERE SPHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "SW"
+                wsSQL = "SELECT SWHDSTATUS STATUS FROM soaSWHD WHERE SWHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+
+            Case "SR"
+                wsSQL = "SELECT SRHDSTATUS STATUS FROM soaSRHD WHERE SRHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "SD"
+                wsSQL = "SELECT SDHDSTATUS STATUS FROM soaSDHD WHERE SDHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "PO"
+                wsSQL = "SELECT POHDSTATUS STATUS FROM popPOHD WHERE POHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "PV"
+                wsSQL = "SELECT PVHDSTATUS STATUS FROM popPVHD WHERE PVHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "GR"
+                wsSQL = "SELECT GRHDSTATUS STATUS FROM popGRHD WHERE GRHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "PR"
+                wsSQL = "SELECT PRHDSTATUS STATUS FROM popPRHD WHERE PRHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "TR", "SM", "AJ", "DM", "SK"
+                wsSQL = "SELECT SJHDSTATUS STATUS FROM ICSTKADJ WHERE SJHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case "SC"
+                wsSQL = "SELECT SCHDSTATUS STATUS FROM ICSTKCNT WHERE SCHDDOCNO = '" & Set_Quote(InDocNo) & "'"
+            Case Else
+                OutStatus = ""
+                Chk_TrnHdDocNo = False
+                MsgBox("No Such TrnCd!Chk_TrnHdDocNo Mod!")
+                Exit Function
+        End Select
+
+
+        'rsRcd.Open(wsSQL, cnCon, ADODB.CursorTypeEnum.adOpenStatic, ADODB.LockTypeEnum.adLockOptimistic)
+
+        Try
+            dataAdapt = New SqlClient.SqlDataAdapter(wsSQL, cnCon)
+            dataAdapt.Fill(rsRcd)
+        Catch ex As SqlClient.SqlException
+            MsgBox(ex.Message)
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+
+        If rsRcd.Rows.Count > 0 Then
+            'UPGRADE_WARNING: Couldn't resolve default property of object ReadRs(). Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6A50421D-15FE-4896-8A1B-2EC21E9037B2"'
+            OutStatus = ReadRs(rsRcd, "STATUS")
+            Chk_TrnHdDocNo = True
+        Else
+            OutStatus = ""
+            Chk_TrnHdDocNo = False
+        End If
+
+        dataAdapt.Dispose()
+        rsRcd.Clear()
+        'UPGRADE_NOTE: Object rsRcd may not be destroyed until it is garbage collected. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6E35BFF6-CD74-4B09-9689-3E1A43DF8969"'
+        rsRcd = Nothing
+
+    End Function
+
 End Module
